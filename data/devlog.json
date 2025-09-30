@@ -8,6 +8,18 @@
     "changes": [],
     "bugs": [
       {
+        "id": "81767568-399f-4ac8-8e17-c1e739e2ce65",
+        "title": "Car lights broken ",
+        "description": "Car lights are too bright yet the drop off is fast ",
+        "severity": "high",
+        "status": "open",
+        "tags": [
+          "Police car"
+        ],
+        "createdAt": "2025-09-30T06:14:06.452Z",
+        "updatedAt": "2025-09-30T06:14:06.452Z"
+      },
+      {
         "id": "2333c70f-8ea3-4eef-8e43-328af2295b21",
         "title": "Car shake",
         "description": "Around 50 MPH the car Shakes, no clue why ",
