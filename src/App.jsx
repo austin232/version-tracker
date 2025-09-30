@@ -4,6 +4,17 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const LS_KEY = "devlog.version.bug.tracker.simple";
 const uuid = () => (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
 const nowISO = () => new Date().toISOString();
+// --- GitHub JSON storage (read/write whole file) ---
+const DEFAULT_GH = {
+    owner: "austin232",          // <-- your GitHub username
+    repo: "version-tracker",     // <-- your repo
+    branch: "main",
+    path: "data/devlog.json",    // file to load/save
+};
+
+// Unicode-safe base64 helpers (GitHub API expects base64 file content)
+const utf8ToB64 = (str) => btoa(unescape(encodeURIComponent(str)));
+const b64ToUtf8 = (b64) => decodeURIComponent(escape(atob(b64)));
 
 const seed = [
     {
@@ -97,6 +108,14 @@ export default function App() {
     const [expanded, setExpanded] = useState({});
     const [onlyOpenBugs, setOnlyOpenBugs] = useState(true);
     const fileRef = useRef(null);
+    // GitHub settings + token (persist locally)
+    const [gh, setGh] = usePersistentState("gh_cfg", DEFAULT_GH);
+    const [ghToken, setGhToken] = usePersistentState("gh_token", " ");
+    const [autoLoad, setAutoLoad] = usePersistentState("gh_auto_load", true);
+    const [ghBusy, setGhBusy] = useState(false);
+    const [ghStatus, setGhStatus] = useState("");
+    const [ghFileSha, setGhFileSha] = useState(null); // needed when saving updates
+
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -127,6 +146,77 @@ export default function App() {
         }
     }
 
+
+    async function loadFromGitHub() {
+  try {
+    setGhBusy(true); setGhStatus("Loading…");
+    const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${gh.branch}`;
+    const res = await fetch(url, {
+      headers: ghToken ? { Authorization: `Bearer ${ghToken}` } : {},
+    });
+    if (res.status === 404) {
+      setGhFileSha(null);
+      setGhStatus("No file yet (will be created on first Save)");
+      return;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();          // { content, sha, ... }
+    const text = b64ToUtf8(json.content);
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error("JSON root must be an array");
+    setGhFileSha(json.sha);
+    setVersions(data);
+    setSelectedId(data[0]?.id ?? null);
+    setGhStatus("Loaded ✓");
+  } catch (e) {
+    console.error(e);
+    setGhStatus("Load failed");
+    alert("GitHub load failed. Check owner/repo/path/branch/token.");
+  } finally {
+    setGhBusy(false);
+  }
+}
+    useEffect(() => {
+        if (autoLoad && gh.owner && gh.repo && gh.path) {
+            loadFromGitHub();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoLoad, gh.owner, gh.repo, gh.path, gh.branch]);
+
+async function saveToGitHub() {
+  try {
+    if (!ghToken) { alert("Add your GitHub token first."); return; }
+    setGhBusy(true); setGhStatus("Saving…");
+    const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}`;
+    const content = utf8ToB64(JSON.stringify(versions, null, 2));
+    const body = {
+      message: `Update devlog (${new Date().toISOString()})`,
+      content,
+      branch: gh.branch,
+      sha: ghFileSha || undefined,   // include sha when updating
+    };
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${ghToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const out = await res.json();    // { content: { sha }, commit: {...} }
+    setGhFileSha(out.content?.sha || null);
+    setGhStatus("Saved ✓");
+  } catch (e) {
+    console.error(e);
+    setGhStatus("Save failed");
+    alert("GitHub save failed. Check token permissions / branch protection.");
+  } finally {
+    setGhBusy(false);
+  }
+}
+
+   
 
     // All bugs across versions (with version metadata)
     const allBugs = useMemo(() => {
@@ -271,6 +361,30 @@ export default function App() {
                     <Btn variant="secondary" onClick={() => duplicateVersion(selected.id)}>Duplicate</Btn>
                     <Btn variant="danger" onClick={() => deleteVersion(selected.id)}>Delete</Btn>
                 </div>
+                <Box>
+                    <div className="toolbar" style={{ marginBottom: 6 }}>
+                        <div className="h2">GitHub Sync</div>
+                        <div className="meta">{ghStatus}</div>
+                    </div>
+
+                    <div style={{ display: "grid", gap: 8 }}>
+                        <Input placeholder="owner" value={gh.owner} onChange={(e) => setGh({ ...gh, owner: e.target.value })} />
+                        <Input placeholder="repo" value={gh.repo} onChange={(e) => setGh({ ...gh, repo: e.target.value })} />
+                        <Input placeholder="branch" value={gh.branch} onChange={(e) => setGh({ ...gh, branch: e.target.value })} />
+                        <Input placeholder="path (e.g., data/devlog.json)" value={gh.path} onChange={(e) => setGh({ ...gh, path: e.target.value })} />
+                        <Input placeholder="GitHub token (write access)" value={ghToken} onChange={(e) => setGhToken(e.target.value)} />
+                        <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12 }}>
+                            <input type="checkbox" checked={autoLoad} onChange={(e) => setAutoLoad(e.target.checked)} />
+                            Auto-load on startup
+                        </label>
+                        <div style={{ display: "flex", gap: 8 }}>
+                            <Btn variant="secondary" onClick={loadFromGitHub} disabled={ghBusy}>Load</Btn>
+                            <Btn onClick={saveToGitHub} disabled={ghBusy}>Save</Btn>
+                        </div>
+                        <div className="meta">Root: {gh.branch} → <code>{gh.path}</code></div>
+                    </div>
+                </Box>
+
 
 
                 <Box><div>Open bugs: {openBugs}</div></Box>
