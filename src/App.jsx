@@ -88,6 +88,9 @@ const Textarea = (p) => <textarea {...p} style={{ border: "1px solid #d1d5db", b
 
 /* ---------- Main App ---------- */
 export default function App() {
+    const [showLeft, setShowLeft] = useState(false);
+    const [showRight, setShowRight] = useState(false);
+
     const [versions, setVersions] = usePersistentState(LS_KEY, seed);
     const [selectedId, setSelectedId] = useState(versions[0]?.id || null);
     const [query, setQuery] = useState("");
@@ -219,7 +222,8 @@ export default function App() {
             }}
         >
             {/* Sidebar */}
-            <aside className="panel" style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
+            <aside className={`panel sidebar-left ${showLeft ? "sidebar-open" : ""}`}
+                onClick={(e) => e.stopPropagation()} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                     <h1 style={{ fontSize: 18, fontWeight: 800 }}>Changelog</h1>
                     <Btn onClick={addVersion}>+ New</Btn>
@@ -276,6 +280,10 @@ export default function App() {
             <main className="panel" style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16 }}>
                 {!selected ? <div>Select a version</div> : (
                     <>
+                        <div className="mobile-only" style={{ justifyContent: "space-between", marginBottom: 8 }}>
+                            <button className="btn secondary" onClick={() => setShowLeft(true)}>☰ Versions</button>
+                            <button className="btn secondary" onClick={() => setShowRight(true)}>🐞 All Bugs</button>
+                        </div>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
                             {/* Editable version label */}
                             <Input
@@ -354,7 +362,10 @@ export default function App() {
                 )}
             </main>
             {/* Right Sidebar: Global Bug List */}
-            <aside className="panel" style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 12 }}>
+            <aside
+                className={`panel sidebar-right ${showRight ? "sidebar-open" : ""}`}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <h2 style={{ fontSize: 16, fontWeight: 800 }}>Open Bugs (All Versions)</h2>
                     <button
@@ -455,9 +466,15 @@ export default function App() {
                     )}
                 </div>
             </aside>
+            <div
+                className={`scrim ${(showLeft || showRight) ? "visible" : ""}`}
+                onClick={() => { setShowLeft(false); setShowRight(false); }}
+            />
 
         </div>
+
     );
+
 }
 
 /* ---------- Composers ---------- */
