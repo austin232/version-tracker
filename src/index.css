@@ -5,12 +5,12 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial
 
 /* Layout */
 .app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr; /* ← mobile: single column */
+    gap: 16px;
 }
 
 /* Panels */
@@ -91,6 +91,92 @@ input:focus, textarea:focus, select:focus { border-color:#111827; }
 .h2 { font-size:15px; font-weight:700; margin:0 0 8px; }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
+/* Desktop: left / main / right */
+@media (min-width: 1024px) {
+    .app {
+        grid-template-columns: 320px 1fr 320px;
+    }
+
+    .sidebar-left, .sidebar-right {
+        position: static;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .desktop-only {
+        display: block !important;
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+}
+/* Mobile drawers (slide-in) */
+.sidebar-left, .sidebar-right {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: min(92vw, 360px);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    padding: 12px;
+    overflow: auto;
+    z-index: 50;
+    transition: transform .25s ease, opacity .2s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-left {
+    left: 0;
+    transform: translateX(-110%);
+}
+
+.sidebar-right {
+    right: 0;
+    transform: translateX(110%);
+}
+
+.sidebar-open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Scrim behind drawers */
+.scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+
+    .scrim.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+/* Bigger tap targets on mobile */
+button, select {
+    min-height: 38px;
+}
+
+input, textarea {
+    min-height: 36px;
+}
+
+/* Show/hide helpers */
+.desktop-only {
+    display: none;
+}
+
+.mobile-only {
+    display: inline-flex;
+    gap: 8px;
 }
