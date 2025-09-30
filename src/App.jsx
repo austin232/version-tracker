@@ -362,6 +362,7 @@ export default function App() {
                 )}
             </main>
             {/* Right Sidebar: Global Bug List */}
+            {/* Right Sidebar: Global Bug List */}
             <aside
                 className={`panel sidebar-right ${showRight ? "sidebar-open" : ""}`}
                 onClick={(e) => e.stopPropagation()}
@@ -390,7 +391,9 @@ export default function App() {
                         onChange={(e) => setGlobalSeverity(e.target.value)}
                         style={{ border: "1px solid #d1d5db", borderRadius: 6, padding: 6, width: "100%" }}
                     >
-                        {["all", "low", "medium", "high", "critical"].map(s => <option key={s} value={s}>{s}</option>)}
+                        {["all", "low", "medium", "high", "critical"].map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -401,11 +404,12 @@ export default function App() {
                     ) : (
                         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                             {visibleGlobalBugs.map((b) => {
-                                const closed = (b.status === "resolved" || b.status === "closed");
+                                const closed = b.status === "resolved" || b.status === "closed";
                                 return (
                                     <li key={b.id} style={{ borderTop: "1px solid #eef0f3", padding: "8px 6px" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                                            <div style={{ minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedId(b.versionId)}>
+                                            {/* LEFT COLUMN: info (click to jump to version) */}
+                                            <div style={{ minWidth: 0, cursor: "pointer" }} onClick={() => { setSelectedId(b.versionId); setShowRight(false); }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                                     <span
                                                         style={{
@@ -419,8 +423,6 @@ export default function App() {
                                                     />
                                                     {b.title}
                                                 </div>
-
-                                                </div>
                                                 <div style={{ fontSize: 11, color: "#6b7280" }}>
                                                     {b.severity} • {b.status.replace("_", " ")} • {new Date(b.updatedAt).toLocaleDateString()}
                                                 </div>
@@ -429,43 +431,45 @@ export default function App() {
                                                 </div>
                                                 {b.tags?.length ? (
                                                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
-                                                        {b.tags.map(t => (
+                                                        {b.tags.map((t) => (
                                                             <span key={t} style={{ fontSize: 11, background: "#f3f4f6", borderRadius: 999, padding: "2px 8px" }}>#{t}</span>
                                                         ))}
                                                     </div>
                                                 ) : null}
                                             </div>
+
+                                            {/* RIGHT COLUMN: actions */}
                                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                                 {!closed && (
-                                                    <Btn variant="secondary" onClick={() => {
-                                                        // jump to version & show only open in main list
-                                                        setSelectedId(b.versionId);
-                                                        // you already have updateBug in scope via closure on main
-                                                        // but we need the versionId; we'll call updateBug using that:
-                                                        const vid = b.versionId; const bid = b.id;
-                                                        // mark resolved
-                                                        const patch = { status: "resolved" };
-                                                        // Quick inline call (reusing updateBug from App scope)
-                                                        // eslint-disable-next-line no-undef
-                                                        updateBug(vid, bid, patch);
-                                                    }}>Resolve</Btn>
+                                                    <Btn
+                                                        variant="secondary"
+                                                        onClick={() => {
+                                                            setSelectedId(b.versionId);
+                                                            updateBug(b.versionId, b.id, { status: "resolved" });
+                                                        }}
+                                                    >
+                                                        Resolve
+                                                    </Btn>
                                                 )}
-                                                <Btn variant="danger" onClick={() => {
-                                                    setSelectedId(b.versionId);
-                                                    // eslint-disable-next-line no-undef
-                                                    deleteBug(b.versionId, b.id);
-                                                }}>Delete</Btn>
+                                                <Btn
+                                                    variant="danger"
+                                                    onClick={() => {
+                                                        setSelectedId(b.versionId);
+                                                        deleteBug(b.versionId, b.id);
+                                                    }}
+                                                >
+                                                    Delete
+                                                </Btn>
+                                            </div>
                                         </div>
-                                            
                                     </li>
-                                        
-                                    
                                 );
                             })}
                         </ul>
                     )}
                 </div>
             </aside>
+
             <div
                 className={`scrim ${(showLeft || showRight) ? "visible" : ""}`}
                 onClick={() => { setShowLeft(false); setShowRight(false); }}
