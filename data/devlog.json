@@ -1,0 +1,72 @@
+[
+  {
+    "id": "bc60d542-03c8-4703-bd8e-d3711d3ceb99",
+    "label": "v0.2.0",
+    "date": "2025-09-30T01:58:41.208Z",
+    "summary": "Graphics engine overhaul",
+    "notes": "tigjkl;dlkjffff",
+    "changes": [],
+    "bugs": [
+      {
+        "id": "2333c70f-8ea3-4eef-8e43-328af2295b21",
+        "title": "Car shake",
+        "description": "Around 50 MPH the car Shakes, no clue why ",
+        "severity": "medium",
+        "status": "open",
+        "tags": [
+          "Police Car"
+        ],
+        "createdAt": "2025-09-30T02:59:00.442Z",
+        "updatedAt": "2025-09-30T02:59:00.442Z"
+      }
+    ]
+  },
+  {
+    "id": "1f0e8a18-dcd3-45e7-8458-26ff71bde3b8",
+    "label": "v0.1.0",
+    "date": "2025-09-29T23:59:26.996Z",
+    "summary": "New Game Concept",
+    "notes": "",
+    "changes": [
+      {
+        "id": "159738b2-c254-4fb5-a384-d8da887bd25c",
+        "type": "add",
+        "text": "Police Car -Drivable and can be Disabled."
+      }
+    ],
+    "bugs": [
+      {
+        "id": "fda4ee83-4feb-424f-86bb-35e2a4a77add",
+        "title": "Hud Displays long text",
+        "description": "rather then 60mph its 60.000e+100",
+        "severity": "low",
+        "status": "resolved",
+        "tags": [],
+        "createdAt": "2025-09-30T01:51:28.052Z",
+        "updatedAt": "2025-09-30T02:27:06.622Z"
+      },
+      {
+        "id": "b0282b5c-0804-46b6-901f-f677a0292eb3",
+        "title": "Lights dont have any blure",
+        "description": "",
+        "severity": "low",
+        "status": "resolved",
+        "tags": [],
+        "createdAt": "2025-09-30T00:24:57.737Z",
+        "updatedAt": "2025-09-30T02:27:06.328Z"
+      },
+      {
+        "id": "d16f670a-e6cc-42a2-ba65-3e8292e56b4a",
+        "title": "Nothing to report",
+        "description": "New Game",
+        "severity": "low",
+        "status": "resolved",
+        "tags": [
+          "0.0.0 upgrade"
+        ],
+        "createdAt": "2025-09-30T00:00:49.571Z",
+        "updatedAt": "2025-09-30T02:27:05.507Z"
+      }
+    ]
+  }
+]
